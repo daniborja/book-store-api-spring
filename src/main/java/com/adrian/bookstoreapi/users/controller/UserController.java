@@ -3,17 +3,18 @@ package com.adrian.bookstoreapi.users.controller;
 import com.adrian.bookstoreapi.common.constants.PaginationConstants;
 import com.adrian.bookstoreapi.common.constants.RoleConstants;
 import com.adrian.bookstoreapi.users.dto.PaginatedUsersResponseDto;
+import com.adrian.bookstoreapi.users.dto.UserRequestDto;
+import com.adrian.bookstoreapi.users.dto.UserResponseDto;
 import com.adrian.bookstoreapi.users.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final ModelMapper modelMapper;
 
 
     @GetMapping
@@ -37,6 +39,18 @@ public class UserController {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         return ResponseEntity.ok(userService.findAll(pageable));
+    }
+
+    @GetMapping("{id}")
+    @Secured(RoleConstants.ADMIN)
+    public ResponseEntity<UserResponseDto> findOne(@PathVariable Long id) {
+        return ResponseEntity.ok(modelMapper.map(userService.findOne(id), UserResponseDto.class));
+    }
+
+    @PatchMapping("{id}")
+    @Secured(RoleConstants.ADMIN)
+    public ResponseEntity<UserResponseDto> update(@PathVariable Long id, @Valid @RequestBody UserRequestDto userRequestDto) {
+        return ResponseEntity.ok(userService.update(id, userRequestDto));
     }
 
 }
